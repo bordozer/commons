@@ -1,0 +1,54 @@
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'com.bordozer'
+version = '3.08'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    springBootStarterVersion = '2.0.4.RELEASE'
+    spotbugsVersion = '3.1.8'
+    lombockVersion = '1.18.4'
+    junit5Version = '5.3.1'
+    junitPlatformLauncherVersion = '1.3.1'
+}
+
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootStarterVersion
+
+    compile group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'
+    compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.3'
+
+    compile group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
+    compile group: 'com.github.spotbugs', name: 'spotbugs', version: spotbugsVersion
+    compile group: 'org.projectlombok', name: 'lombok', version: lombockVersion
+
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.7'
+
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootStarterVersion
+    compile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junit5Version
+    compile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: junit5Version
+    compile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit5Version
+    compile group: 'org.junit.vintage', name: 'junit-vintage-engine', version: junit5Version
+    compile group: 'org.junit.platform', name: 'junit-platform-launcher', version: junitPlatformLauncherVersion
+    compile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
+}
+
+/* JUnit 5 */
+test {
+    useJUnitPlatform {
+        excludeTags 'NO_JENKINS'
+    }
+    testLogging {
+        events 'PASSED', 'FAILED', 'SKIPPED'
+    }
+    afterTest { desc, result ->
+        logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+    }
+}
+test.testLogging.showStandardStreams = true
