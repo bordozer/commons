@@ -3,7 +3,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group = 'com.bordozer'
-version = '3.08'
+version = '3.09'
 
 repositories {
     mavenCentral()

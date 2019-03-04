@@ -47,6 +47,16 @@ public class Java8DateTimeConfiguration {
         return objectMapper;
     }
 
+    @Bean
+    public LocalDateConverter localDateConverter() {
+        return new LocalDateConverter(dateFormat);
+    }
+
+    @Bean
+    public LocalDateTimeConverter localDateTimeConverter() {
+        return new LocalDateTimeConverter(dateTimeFormat);
+    }
+
     public class LocalDateSerializer extends JsonSerializer<LocalDate> {
 
         @Override
