@@ -51,8 +51,25 @@ application:
     dateFormat: MM/dd/yyyy
     dateTimeFormat: MM/dd/yyyy HH:mm:ss
 ```
+Also, the configuration registers two beans
+`````` 
+LocalDateConverter
+LocalDateTimeConverter
+``````
+They allow to avoid defining **@DateTimeFormat** for @RequestParam with LocalDate and LocalDateTime types in controllers. 
+The previously mentioned properties are used for deserialization.  
+`````` 
+@GetMapping(path = "/")
+public ResponseEntity<List<UserDto>> getAllUsers(
+    @RequestParam final LocalDate date // @DateTimeFormat(pattern = "yyyyMMdd") is not necessary for date variable
+) {
+    // ... controller body
+}
+``````
+Be aware that defining *@DateTimeFormat(pattern = "yyyyMMdd")* does nothing and variables are going to be parsed according to a defined in application properties file formats.
+Use String type instead of Java 8 DateTime API for a special cases (if endpoint date format is other then global one). 
 
-_Note:_ 
+**Important Note** 
 
 The configuration makes all endpoint contracts very strict.
 If request does not contain some DTO's property, it is not considered like *null* and application fails.
