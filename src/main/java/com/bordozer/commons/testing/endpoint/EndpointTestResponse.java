@@ -59,7 +59,7 @@ public final class EndpointTestResponse {
     }
 
     public EndpointTestResponse hasJsonContentType() {
-        this.responseContentType = MediaType.APPLICATION_JSON_UTF8.getType();
+        this.responseContentType = MediaType.APPLICATION_JSON_UTF8.toString();
         return this;
     }
 
