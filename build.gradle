@@ -3,7 +3,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group = 'com.bordozer'
-version = '3.09'
+version = '3.10'
 
 repositories {
     mavenCentral()
@@ -19,6 +19,8 @@ ext {
 
 dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootStarterVersion
+    compile group: 'org.springframework', name: 'spring-jdbc', version: '2.0.6'
+//    compile group: 'org.springframework', name: 'spring-core', version: '5.1.4.RELEASE'
 
     compile group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.3'
