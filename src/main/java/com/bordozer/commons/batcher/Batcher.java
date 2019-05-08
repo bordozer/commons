@@ -1,14 +1,16 @@
 package com.bordozer.commons.batcher;
 
-import org.apache.commons.collections4.CollectionUtils;
+import static com.google.common.collect.Lists.newArrayList;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.google.common.collect.Lists.newArrayList;
+import org.apache.commons.collections4.CollectionUtils;
 
-public final class Batcher {
+public final class Batcher implements Serializable {
 
     private static final int ITEMS_IN_BATCH = 10;
 
@@ -33,8 +35,8 @@ public final class Batcher {
         final int startIndex = batchNumber * itemsPerBatch;
         final int finalIndex = (startIndex + (itemsPerBatch - 1));
         if (finalIndex > list.size() - 1) {
-            return new Batch<>(batchNumber, list.subList(startIndex, list.size()));
+            return new Batch<>(batchNumber, new ArrayList<>(list.subList(startIndex, list.size())));
         }
-        return new Batch<>(batchNumber, list.subList(startIndex, finalIndex + 1));
+        return new Batch<>(batchNumber, new ArrayList<>(list.subList(startIndex, finalIndex + 1)));
     }
 }
