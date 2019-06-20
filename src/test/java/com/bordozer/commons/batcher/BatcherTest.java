@@ -9,6 +9,8 @@ import java.util.stream.IntStream;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.bordozer.commons.utils.Counter;
+
 class BatcherTest {
 
     @Test
@@ -69,6 +71,21 @@ class BatcherTest {
         assertThat(actual.get(0).getItems()).containsAll(newArrayList("0", "1", "2", "3"));
         assertThat(actual.get(1).getNumber()).isEqualTo(1);
         assertThat(actual.get(1).getItems()).containsAll(newArrayList("4", "5", "6", "7"));
+    }
+
+    @Test
+    void shouldExecuteForEachBatch() {
+        // given
+        final List<String> list = buildList(8);
+        final Counter counter = new Counter();
+
+        // when
+        Batcher.forEachBatch(list, 5, batch -> {
+            counter.increment();
+        });
+
+        // then
+        assertThat(counter.getValue()).isEqualTo(2);
     }
 
     private static List<String> buildList(final int count) {

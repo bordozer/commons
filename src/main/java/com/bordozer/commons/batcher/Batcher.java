@@ -3,6 +3,7 @@ package com.bordozer.commons.batcher;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.Serializable;
+import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +30,10 @@ public final class Batcher implements Serializable {
         return IntStream.range(0, batchCount)
                 .mapToObj(batchNumber -> extractBatch(list, batchNumber, itemsPerBatch))
                 .collect(Collectors.toList());
+    }
+
+    public static <T> void forEachBatch(final List<T> list, final int itemsPerBatch, final Applicable<T> applicable) {
+        split(list, itemsPerBatch).forEach(applicable::apply);
     }
 
     private static <T> Batch<T> extractBatch(final List<T> list, final int batchNumber, final int itemsPerBatch) {
