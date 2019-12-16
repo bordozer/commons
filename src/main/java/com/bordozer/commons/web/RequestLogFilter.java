@@ -1,6 +1,7 @@
 package com.bordozer.commons.web;
 
 import com.bordozer.commons.utils.LoggableJson;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,10 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 
 @Slf4j
+@RequiredArgsConstructor
 public class RequestLogFilter extends OncePerRequestFilter {
+    private final boolean logRequest;
+    private final boolean logResponse;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -34,6 +38,9 @@ public class RequestLogFilter extends OncePerRequestFilter {
     }
 
     private void logRequest(final ContentCachingRequestWrapper requestWrapper) {
+        if (!logRequest) {
+            return;
+        }
         final String contentType = requestWrapper.getContentType();
         final HttpMethod method = HttpMethod.valueOf(requestWrapper.getMethod());
         final String requestURI = requestWrapper.getRequestURI();
@@ -47,6 +54,9 @@ public class RequestLogFilter extends OncePerRequestFilter {
     }
 
     private void logResponse(final ContentCachingResponseWrapper responseWrapper) {
+        if (!logResponse) {
+            return;
+        }
         final HttpStatus httpStatus = HttpStatus.valueOf(responseWrapper.getStatus());
         final String contentType = responseWrapper.getContentType();
         final String headers = LoggableJson.of(responseWrapper.getHeaderNames().stream().distinct()

@@ -15,6 +15,10 @@ public class CommonsWebConfig {
 
     @Value("${application.properties.logging.logRequestForUrls}")
     private List<String> requestLogUrls = newArrayList();
+    @Value("${application.properties.logging.logRequest}")
+    private boolean logRequest = true;
+    @Value("${application.properties.logging.logResponse}")
+    private boolean logResponse = true;
 
     @Bean
     @Order(1)
@@ -28,7 +32,7 @@ public class CommonsWebConfig {
     @Order(2)
     public FilterRegistrationBean<RequestLogFilter> requestLogFilter() {
         final FilterRegistrationBean<RequestLogFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new RequestLogFilter());
+        registrationBean.setFilter(new RequestLogFilter(logRequest, logResponse));
         registrationBean.setUrlPatterns(requestLogUrls);
         return registrationBean;
     }
