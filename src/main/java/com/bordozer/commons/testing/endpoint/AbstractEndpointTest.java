@@ -1,10 +1,10 @@
 package com.bordozer.commons.testing.endpoint;
 
+import com.bordozer.commons.testing.endpoint.ResponseHttpHeader.HeaderPresence;
 import com.bordozer.commons.utils.FileUtils;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -14,13 +14,11 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.ContentResultMatchers;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.MimeType;
 
 import javax.annotation.CheckForNull;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,9 +27,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 public abstract class AbstractEndpointTest {
@@ -55,7 +51,7 @@ public abstract class AbstractEndpointTest {
                               final String pathToFile) {
 
         final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.multipart(builder.getUrl())
-                                                                     .file(getMultipartFile(fileContentType.getType(), fileName, pathToFile));
+                .file(getMultipartFile(fileContentType.getType(), fileName, pathToFile));
         requestTo(builder, requestBuilder);
     }
 
@@ -74,36 +70,53 @@ public abstract class AbstractEndpointTest {
             requestBuilder.content(request.getRequestJson());
         }
 
-        final EndpointTestResponse response = request.getExpectedResponse();
+        final EndpointTestResponse expectedResponseresponse = request.getExpectedResponse();
 
         final ResultActions resultActions = mockMvc.perform(requestBuilder)
-                                                    .andDo(print())
-                                                    .andExpect(getResponseHttpStatusMatcher(response.getResponseHttpStatus()))
-                                                    .andExpect(getResponseContentTypeMatcher(response.getResponseContentType()))
-                                                    .andExpect(getResponseBodyMatcher(response.getResponseBody(), response.getResponseMatchType()));
+                .andDo(print())
+                .andExpect(getResponseHttpStatusMatcher(expectedResponseresponse.getResponseHttpStatus()))
+                .andExpect(getResponseContentTypeMatcher(expectedResponseresponse.getResponseContentType()))
+                .andExpect(getResponseBodyMatcher(expectedResponseresponse.getResponseBody(), expectedResponseresponse.getResponseMatchType()));
 
 
-        final HttpHeaders responseHttpHeaders = response.getResponseHttpHeaders();
-        responseHttpHeaders.keySet()
-                .forEach(headerName -> assertHttpHeaderExists(resultActions, headerName, responseHttpHeaders.get(headerName)));
+        final ResponseHttpHeaders responseHttpHeaders = expectedResponseresponse.getResponseHttpHeaders();
+        responseHttpHeaders.getResponseHttpHeaders()
+                .forEach(httpHeader -> assertHttpHeaderExists(resultActions, httpHeader));
     }
 
     @SneakyThrows
-    private void assertHttpHeaderExists(final ResultActions resultActions, final String headerName, @CheckForNull final List<String> headerValues) {
-        @CheckForNull final String headerValue = CollectionUtils.isEmpty(headerValues) ? null : headerValues.get(0);
-        resultActions.andExpect(header().string(headerName, equalTo(headerValue)));
+    private void assertHttpHeaderExists(final ResultActions resultActions, final ResponseHttpHeader httpHeader) {
+        final String header = httpHeader.getHeader();
+        final String value = httpHeader.getValue();
+        final HeaderPresence headerPresence = httpHeader.getHeaderPresence();
+
+        switch (headerPresence) {
+            case EXISTS_WITH_PARTICULAR_VALUE:
+                resultActions.andExpect(header().exists(header));
+                resultActions.andExpect(header().string(header, equalTo(value)));
+                return;
+            case EXISTS_WITH_ANY_VALUE:
+                resultActions.andExpect(header().exists(header));
+                resultActions.andExpect(header().exists(header));
+                return;
+            case DOES_NOT_EXISTS:
+                resultActions.andExpect(header().doesNotExist(header));
+                return;
+            default:
+                throw new IllegalArgumentException(String.format("Header presence \"%s\" is not supported", headerPresence));
+        }
     }
 
     private ResultMatcher getResponseHttpStatusMatcher(@CheckForNull final HttpStatus responseStatus) {
         return Optional.ofNullable(responseStatus)
-                       .map(httpStatus -> status().is(httpStatus.value()))
-                       .orElse(ANY_MATCH);
+                .map(httpStatus -> status().is(httpStatus.value()))
+                .orElse(ANY_MATCH);
     }
 
     private ResultMatcher getResponseContentTypeMatcher(@CheckForNull final String contentType) {
         return Optional.ofNullable(contentType)
-                       .map(media -> content().contentType(media))
-                       .orElse(ANY_MATCH);
+                .map(media -> content().contentType(media))
+                .orElse(ANY_MATCH);
     }
 
     private ResultMatcher getResponseBodyMatcher(@CheckForNull final String responseBody, @CheckForNull final ResponseMatchType responseMatchType) {

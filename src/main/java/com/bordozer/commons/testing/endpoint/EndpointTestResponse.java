@@ -2,7 +2,6 @@ package com.bordozer.commons.testing.endpoint;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -20,7 +19,7 @@ public final class EndpointTestResponse {
     private String responseContentType;
     @CheckForNull
     private ResponseMatchType responseMatchType;
-    private final HttpHeaders responseHttpHeaders = new HttpHeaders();
+    private final ResponseHttpHeaders responseHttpHeaders = new ResponseHttpHeaders();
 
     @CheckForNull
     private String responseBody;
@@ -45,16 +44,22 @@ public final class EndpointTestResponse {
         return this;
     }
 
-    public EndpointTestResponse hasHttpHeader(final String header, final String value) {
+    public EndpointTestResponse hasHttpHeaderWithParticularValue(final String header, final String value) {
         Assert.notNull(value, "Header value must not be null. Use hasNoHttpHeader() instead of passing null here");
-        Assert.isTrue(!responseHttpHeaders.containsKey(header), String.format("Http header '%s' has already been added for checking", header));
-        this.responseHttpHeaders.add(header, value);
+        Assert.isTrue(!responseHttpHeaders.exists(header), String.format("Http header '%s' has already been added for checking", header));
+        this.responseHttpHeaders.add(ResponseHttpHeader.existsWithParticularValue(header, value));
         return this;
     }
 
-    public EndpointTestResponse hasNoHttpHeader(final String header) {
-        Assert.isTrue(!responseHttpHeaders.containsKey(header), String.format("Http header '%s' has already been added for checking", header));
-        this.responseHttpHeaders.add(header, null);
+    public EndpointTestResponse hasHttpHeaderWithAnyValue(final String header) {
+        Assert.isTrue(!responseHttpHeaders.exists(header), String.format("Http header '%s' has already been added for checking", header));
+        this.responseHttpHeaders.add(ResponseHttpHeader.existsWithAnyValue(header));
+        return this;
+    }
+
+    public EndpointTestResponse doesNotHaveHttpHeader(final String header) {
+        Assert.isTrue(!responseHttpHeaders.exists(header), String.format("Http header '%s' has already been added for checking", header));
+        this.responseHttpHeaders.add(ResponseHttpHeader.doesNotExists(header));
         return this;
     }
 
