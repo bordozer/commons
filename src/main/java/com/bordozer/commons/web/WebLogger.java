@@ -1,13 +1,16 @@
 package com.bordozer.commons.web;
 
 import com.bordozer.commons.utils.LoggableJson;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
 
-import java.util.Collections;
+import javax.annotation.CheckForNull;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -16,32 +19,55 @@ public class WebLogger {
     WebLogger() {
     }
 
-    void logRequest(final ContentCachingRequestWrapper requestWrapper) {
-        final String contentType = requestWrapper.getContentType();
-        final HttpMethod method = HttpMethod.valueOf(requestWrapper.getMethod());
-        final String requestURI = requestWrapper.getRequestURI();
-        final String queryString = requestWrapper.getQueryString();
-        final String headers = LoggableJson.of(Collections.list(requestWrapper.getHeaderNames()).stream()
-                .collect(Collectors.toMap(head -> head, requestWrapper::getHeader))).toString();
-        final String body = getBody(requestWrapper.getContentAsByteArray());
-        final String parameters = LoggableJson.of(requestWrapper.getParameterMap()).toString();
+    void logRequest(final RequestLogData requestLogData) {
+        final String headers = LoggableJson.of(requestLogData.getHttpHeaders().keySet().stream()
+                .collect(Collectors.toMap(head -> head, head -> requestLogData.getHttpHeaders().get(head)))).toString();
+        final String parameters = LoggableJson.of(requestLogData.getHttpParameters()).toString();
+
         log.info("Request: URI=\"{}\", method=\"{}\", contentType=\"{}\", headers=\"{}\", queryString=\"{}\", parameters=\"{}\", body=\"{}\"",
-                requestURI, method, contentType, headers, queryString, parameters, body);
+                requestLogData.getUri(), requestLogData.getHttpMethod(), requestLogData.getContentType(), headers,
+                requestLogData.getQueryString(), parameters, requestLogData.getBody());
     }
 
-    void logResponse(final ContentCachingResponseWrapper responseWrapper) {
-        final HttpStatus httpStatus = HttpStatus.valueOf(responseWrapper.getStatus());
-        final String contentType = responseWrapper.getContentType();
-        final String headers = LoggableJson.of(responseWrapper.getHeaderNames().stream().distinct()
-                .collect(Collectors.toMap(head -> head, responseWrapper::getHeader))).toString();
-        final String body = getBody(responseWrapper.getContentAsByteArray());
+    void logResponse(final ResponseLogData responseLogData) {
+        final String headers = LoggableJson.of(responseLogData.getHttpHeaders().keySet().stream().distinct()
+                .collect(Collectors.toMap(head -> head, head -> responseLogData.getHttpHeaders().get(head)))).toString();
+
         log.info("Response: httpStatus=\"{}\", contentType=\"{}\", headers=\"{}\", body=\"{}\"",
-                httpStatus, contentType, headers, body);
+                responseLogData.getResponseStatus(), responseLogData.getContentType(), headers, responseLogData.getBody());
     }
 
-    private static String getBody(byte[] contentAsByteArray) {
-        return new String(contentAsByteArray)
-                .replaceAll(System.lineSeparator(), "")
-                .replaceAll("\t", "");
+    @Getter
+    @Builder
+    @ToString
+    public static class RequestLogData {
+        @NonNull
+        private final String uri;
+        @NonNull
+        private final HttpMethod httpMethod;
+        @CheckForNull
+        private final String contentType;
+        @NonNull
+        private final Map<String, String> httpHeaders;
+        @CheckForNull
+        private final String queryString;
+        @CheckForNull
+        private final Map<String, String[]> httpParameters;
+        @CheckForNull
+        private final String body;
+    }
+
+    @Getter
+    @Builder
+    @ToString
+    public static class ResponseLogData {
+        @NonNull
+        private final HttpStatus responseStatus;
+        @CheckForNull
+        private final String contentType;
+        @NonNull
+        private final Map<String, String> httpHeaders;
+        @CheckForNull
+        private final String body;
     }
 }
