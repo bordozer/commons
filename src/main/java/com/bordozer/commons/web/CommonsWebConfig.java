@@ -32,7 +32,7 @@ public class CommonsWebConfig {
     @Order(2)
     public FilterRegistrationBean<RequestLogFilter> requestLogFilter() {
         final FilterRegistrationBean<RequestLogFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new RequestLogFilter(logRequest, logResponse));
+        registrationBean.setFilter(new RequestLogFilter(logRequest, logResponse, new WebLogger()));
         registrationBean.setUrlPatterns(requestLogUrls);
         return registrationBean;
     }
