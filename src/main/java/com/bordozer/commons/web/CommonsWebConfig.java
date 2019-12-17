@@ -8,17 +8,8 @@ import org.springframework.core.annotation.Order;
 
 import java.util.List;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 @Configuration
 public class CommonsWebConfig {
-
-    @Value("${application.properties.logging.logRequestForUrls}")
-    private List<String> requestLogUrls = newArrayList();
-    @Value("${application.properties.logging.logRequest}")
-    private boolean logRequest = true;
-    @Value("${application.properties.logging.logResponse}")
-    private boolean logResponse = true;
 
     @Bean
     @Order(1)
@@ -30,7 +21,11 @@ public class CommonsWebConfig {
 
     @Bean
     @Order(2)
-    public FilterRegistrationBean<RequestLogFilter> requestLogFilter() {
+    public FilterRegistrationBean<RequestLogFilter> requestLogFilter(
+            @Value("${application.properties.logging.logRequestForUrls:}") List<String> requestLogUrls,
+            @Value("${application.properties.logging.logRequest:true}") boolean logRequest,
+            @Value("${application.properties.logging.logResponse:true}") boolean logResponse
+    ) {
         final FilterRegistrationBean<RequestLogFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(new RequestLogFilter(logRequest, logResponse, new WebLogger()));
         registrationBean.setUrlPatterns(requestLogUrls);

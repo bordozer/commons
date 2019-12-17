@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WebLogger {
 
-    WebLogger() {
+    public WebLogger() {
     }
 
-    void logRequest(final RequestLogData requestLogData) {
+    public void logRequest(final RequestLogData requestLogData) {
         final String headers = LoggableJson.of(requestLogData.getHttpHeaders().keySet().stream()
                 .collect(Collectors.toMap(head -> head, head -> requestLogData.getHttpHeaders().get(head)))).toString();
         final String parameters = LoggableJson.of(requestLogData.getHttpParameters()).toString();
@@ -29,7 +29,7 @@ public class WebLogger {
                 requestLogData.getQueryString(), parameters, requestLogData.getBody());
     }
 
-    void logResponse(final ResponseLogData responseLogData) {
+    public void logResponse(final ResponseLogData responseLogData) {
         final String headers = LoggableJson.of(responseLogData.getHttpHeaders().keySet().stream().distinct()
                 .collect(Collectors.toMap(head -> head, head -> responseLogData.getHttpHeaders().get(head)))).toString();
 
