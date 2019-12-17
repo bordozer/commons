@@ -16,9 +16,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WebLogger {
 
-    public WebLogger() {
-    }
-
     public void logRequest(final RequestLogData requestLogData) {
         final String headers = LoggableJson.of(requestLogData.getHttpHeaders().keySet().stream()
                 .collect(Collectors.toMap(head -> head, head -> requestLogData.getHttpHeaders().get(head)))).toString();
