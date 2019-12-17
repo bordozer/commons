@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -20,9 +22,10 @@ public class RequestIdFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
+        final ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request);
+        final ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(response);
         try {
-            String traceId = request.getHeader(HTTP_HEADER_TRACE_ID);
+            String traceId = requestWrapper.getHeader(HTTP_HEADER_TRACE_ID);
             if (StringUtils.isEmpty(traceId)) {
                 traceId = UUID.randomUUID().toString();
                 log.info("TraceId cannot be obtained from http header. Generated new \"{}\"", traceId);
@@ -32,12 +35,12 @@ public class RequestIdFilter extends OncePerRequestFilter {
 
             MDC.put(LOG_TRACE_ID, traceId);
 
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(requestWrapper, responseWrapper);
 
-            if (StringUtils.isEmpty(response.getHeader(HTTP_HEADER_TRACE_ID))) {
-                response.addHeader(HTTP_HEADER_TRACE_ID, traceId);
+            if (StringUtils.isEmpty(responseWrapper.getHeader(HTTP_HEADER_TRACE_ID))) {
+                responseWrapper.addHeader(HTTP_HEADER_TRACE_ID, traceId);
             }
-
+            responseWrapper.copyBodyToResponse();
             log.info("TraceId has been added to response http header \"{}\"", HTTP_HEADER_TRACE_ID);
         } finally {
             MDC.clear();
