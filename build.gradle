@@ -1,9 +1,11 @@
-
 apply plugin: 'java'
 apply plugin: 'maven'
 
 group = 'com.bordozer'
-version = '3.31'
+archivesBaseName = 'commons'
+version = '3.32'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
