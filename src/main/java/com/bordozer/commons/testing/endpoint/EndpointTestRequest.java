@@ -13,7 +13,7 @@ import java.util.Map;
 public final class EndpointTestRequest {
     private final EndpointTestBuilder endpointTestBuilder;
 
-    private MediaType requestContentType = MediaType.APPLICATION_JSON_UTF8;
+    private MediaType requestContentType = MediaType.APPLICATION_JSON;
     private final HttpHeaders requestHttpHeaders = new HttpHeaders();
     private final Map<String, String> requestHttpParameters = new HashMap<>();
     @CheckForNull
@@ -52,7 +52,7 @@ public final class EndpointTestRequest {
 
     public EndpointTestBuilder thenResponseSuccessWithJsonBody(final String responseJson) {
         expectedResponse.hasHttpStatus(HttpStatus.OK);
-        expectedResponse.hasContentType(MediaType.APPLICATION_JSON_UTF8);
+        expectedResponse.hasContentType(MediaType.APPLICATION_JSON);
         expectedResponse.hasBodyJson(responseJson);
 
         return expectedResponse.end();
